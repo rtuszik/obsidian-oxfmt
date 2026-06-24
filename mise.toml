@@ -6,3 +6,7 @@ opengrep = "latest"
 oxfmt = "latest"
 oxlint = "latest"
 zizmor = "latest"
+
+[tasks.bump]
+description = "Bump the plugin version. Usage: mise run bump <major|minor|patch|x.y.z>"
+run = "node version-bump.mjs"

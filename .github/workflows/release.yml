@@ -1,52 +1,65 @@
-name: Release Obsidian plugin
+name: Release
 
 on:
-    push:
-        tags:
-            - '*'
+    release:
+        types: [published]
+
+permissions:
+    contents: write
+    id-token: write
+    attestations: write
 
 jobs:
-    build:
+    release:
         runs-on: ubuntu-latest
-        permissions:
-            contents: write
-            id-token: write
-            attestations: write
+        env:
+            TAG: ${{ github.event.release.tag_name }}
         steps:
             - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
               with:
+                  ref: ${{ github.event.release.tag_name }}
                   persist-credentials: false
 
-            - name: Install tools (aube, oxlint, oxfmt)
+            - name: Install tools
               uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
               with:
-                  # Avoid restoring a potentially poisoned cache in a publish job.
                   cache: false
 
-            - name: Build plugin
+            - name: Verify tag matches manifest version
               run: |
-                  aube ci
-                  aube run build
+                  version="$(node -p "require('./manifest.json').version")"
+                  if [ "$TAG" != "$version" ]; then
+                      echo "::error::Release tag '$TAG' does not match manifest.json version '$version'"
+                      exit 1
+                  fi
 
-            - name: Check for optional styles
-              id: styles
-              run: |
-                  [ -f styles.css ] && echo "exists=true" >> "$GITHUB_OUTPUT" || echo "exists=false" >> "$GITHUB_OUTPUT"
+            - name: Install dependencies
+              run: aube ci
+
+            - name: Lint
+              run: oxlint
+
+            - name: Check formatting
+              run: oxfmt --check
+
+            - name: Secret scan
+              run: betterleaks dir --redact --no-banner .
+
+            - name: SAST
+              run: opengrep scan --error --config p/typescript --config p/security-audit .
+
+            - name: Test
+              run: aube run test
+
+            - name: Build
+              run: aube run build
 
             - name: Attest build provenance
               uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
               with:
-                  subject-path: |
-                      main.js
-                      ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
+                  subject-path: main.js
 
-            - name: Create release
+            - name: Upload release artifacts
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: |
-                  tag="${GITHUB_REF#refs/tags/}"
-
-                  gh release create "$tag" \
-                    --title="$tag" \
-                    --draft \
-                    main.js manifest.json ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
+              run: gh release upload "$TAG" main.js manifest.json --clobber

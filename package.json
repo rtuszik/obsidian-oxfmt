@@ -19,8 +19,7 @@
         "test": "node --test",
         "format": "oxfmt --write",
         "format:check": "oxfmt --check",
-        "security": "opengrep scan --error --config p/typescript --config p/security-audit .",
-        "version": "node version-bump.mjs && git add manifest.json versions.json"
+        "security": "opengrep scan --error --config p/typescript --config p/security-audit ."
     },
     "devDependencies": {
         "@types/node": "^22.15.17",
