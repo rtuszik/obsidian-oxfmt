@@ -1,5 +1,6 @@
 [tools]
 aube = "latest"
+betterleaks = "latest"
 hk = "latest"
 opengrep = "latest"
 oxfmt = "latest"

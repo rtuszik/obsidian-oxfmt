@@ -3,6 +3,7 @@ import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtin
 
 // Fast steps that run on every commit.
 local linters = new Mapping<String, Step> {
+    ["betterleaks"] = Builtins.betterleaks
     ["oxlint"] = Builtins.ox_lint
     ["oxfmt"] = Builtins.oxfmt
 }
@@ -26,6 +27,7 @@ hooks {
     }
     ["check"] {
         steps {
+            ["betterleaks"] = Builtins.betterleaks
             ["oxlint"] = Builtins.ox_lint
             ["oxfmt"] = Builtins.oxfmt
             ["opengrep"] = opengrep
