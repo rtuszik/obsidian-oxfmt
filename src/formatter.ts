@@ -44,7 +44,9 @@ export function runOxfmt(options: RunOxfmtOptions): Promise<string> {
         });
 
         child.stdin.on('error', (error) => {
-            reject(error);
+            if ((error as NodeJS.ErrnoException).code !== 'EPIPE') {
+                reject(error);
+            }
         });
         child.stdin.end(options.content);
     });
