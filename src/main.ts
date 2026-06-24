@@ -11,7 +11,7 @@ import { isAbsolute, join } from 'path';
 import { runOxfmt } from './formatter';
 import { DEFAULT_SETTINGS, OxfmtSettings, OxfmtSettingTab } from './settings';
 import { registerTriggers } from './triggers';
-import { expandHome } from './util';
+import { expandHome, isExtensionEnabled, isSupportedExtension } from './util';
 
 interface FormatOptions {
     silent?: boolean;
@@ -74,9 +74,16 @@ export default class OxfmtPlugin extends Plugin {
     }
 
     async formatEditor(editor: Editor, file: TFile, options: FormatOptions = {}): Promise<void> {
-        if (!this.settings.extensions.includes(file.extension.toLowerCase())) {
+        const ext = file.extension.toLowerCase();
+        if (!isSupportedExtension(ext)) {
             if (!options.silent) {
-                new Notice(`oxfmt: .${file.extension} files are not enabled in settings.`);
+                new Notice(`oxfmt does not support .${file.extension} files.`);
+            }
+            return;
+        }
+        if (!isExtensionEnabled(ext, this.settings.disabledExtensions)) {
+            if (!options.silent) {
+                new Notice(`oxfmt: .${file.extension} formatting is disabled in settings.`);
             }
             return;
         }

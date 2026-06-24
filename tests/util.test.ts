@@ -2,25 +2,45 @@ import assert from 'node:assert/strict';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { expandHome, parseExtensions } from '../src/util.ts';
+import {
+    expandHome,
+    isExtensionEnabled,
+    isSupportedExtension,
+    SUPPORTED_EXTENSIONS,
+} from '../src/util.ts';
 
-describe('parseExtensions', () => {
-    it('splits on commas and whitespace', () => {
-        assert.deepEqual(parseExtensions('md, ts, json'), ['md', 'ts', 'json']);
-        assert.deepEqual(parseExtensions('md ts\njson'), ['md', 'ts', 'json']);
+describe('isSupportedExtension', () => {
+    it('recognizes supported extensions case-insensitively', () => {
+        assert.equal(isSupportedExtension('md'), true);
+        assert.equal(isSupportedExtension('TS'), true);
+        assert.equal(isSupportedExtension('json'), true);
     });
 
-    it('strips leading dots and lowercases', () => {
-        assert.deepEqual(parseExtensions('.MD, .Ts'), ['md', 'ts']);
+    it('rejects extensions oxfmt does not handle', () => {
+        assert.equal(isSupportedExtension('sql'), false);
+        assert.equal(isSupportedExtension('astro'), false);
+        assert.equal(isSupportedExtension('txt'), false);
+    });
+});
+
+describe('isExtensionEnabled', () => {
+    it('treats all supported extensions as enabled by default', () => {
+        for (const ext of SUPPORTED_EXTENSIONS) {
+            assert.equal(isExtensionEnabled(ext, []), true);
+        }
     });
 
-    it('drops empty entries from stray separators', () => {
-        assert.deepEqual(parseExtensions(' , md ,, ts , '), ['md', 'ts']);
+    it('reports a supported extension as disabled when listed', () => {
+        assert.equal(isExtensionEnabled('md', ['md']), false);
+        assert.equal(isExtensionEnabled('MD', ['md']), false);
     });
 
-    it('returns an empty array for blank input', () => {
-        assert.deepEqual(parseExtensions(''), []);
-        assert.deepEqual(parseExtensions('   '), []);
+    it('leaves other extensions enabled when one is disabled', () => {
+        assert.equal(isExtensionEnabled('ts', ['md']), true);
+    });
+
+    it('is always false for unsupported extensions', () => {
+        assert.equal(isExtensionEnabled('sql', []), false);
     });
 });
 

@@ -1,13 +1,13 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
 import type OxfmtPlugin from './main';
-import { parseExtensions } from './util';
+import { SUPPORTED_EXTENSIONS, SUPPORTED_FILETYPES } from './util';
 
 export interface OxfmtSettings {
     binPath: string;
     configPath: string;
     formatOnSave: boolean;
     formatOnBlur: boolean;
-    extensions: string[];
+    disabledExtensions: string[];
     notifyOnError: boolean;
 }
 
@@ -16,7 +16,7 @@ export const DEFAULT_SETTINGS: OxfmtSettings = {
     configPath: '',
     formatOnSave: true,
     formatOnBlur: false,
-    extensions: ['md'],
+    disabledExtensions: [],
     notifyOnError: true,
 };
 
@@ -52,20 +52,7 @@ export class OxfmtSettingTab extends PluginSettingTab {
                 }),
             );
 
-        new Setting(containerEl)
-            .setName('File extensions')
-            .setDesc(
-                'Comma-separated extensions oxfmt is allowed to format (e.g. md, ts, json, css, yaml). Only files with these extensions are formatted.',
-            )
-            .addText((text) =>
-                text
-                    .setPlaceholder('md, ts, json, css')
-                    .setValue(this.plugin.settings.extensions.join(', '))
-                    .onChange(async (value) => {
-                        this.plugin.settings.extensions = parseExtensions(value);
-                        await this.plugin.saveSettings();
-                    }),
-            );
+        this.displayFileTypes(containerEl);
 
         new Setting(containerEl)
             .setName('oxfmt binary path')
@@ -106,5 +93,54 @@ export class OxfmtSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }),
             );
+    }
+
+    private displayFileTypes(containerEl: HTMLElement): void {
+        new Setting(containerEl).setName('File types').setHeading();
+
+        new Setting(containerEl)
+            .setDesc(
+                'Choose which file types oxfmt formats. All supported types are enabled by default.',
+            )
+            .addButton((button) =>
+                button.setButtonText('Enable all').onClick(async () => {
+                    this.plugin.settings.disabledExtensions = [];
+                    await this.plugin.saveSettings();
+                    this.display();
+                }),
+            )
+            .addButton((button) =>
+                button.setButtonText('Disable all').onClick(async () => {
+                    this.plugin.settings.disabledExtensions = [...SUPPORTED_EXTENSIONS];
+                    await this.plugin.saveSettings();
+                    this.display();
+                }),
+            );
+
+        const disabled = this.plugin.settings.disabledExtensions;
+        for (const type of SUPPORTED_FILETYPES) {
+            const enabled = type.extensions.every((ext) => !disabled.includes(ext));
+            new Setting(containerEl)
+                .setName(type.language)
+                .setDesc(type.extensions.map((ext) => `.${ext}`).join(', '))
+                .addToggle((toggle) =>
+                    toggle.setValue(enabled).onChange(async (value) => {
+                        this.setFileTypeEnabled(type.extensions, value);
+                        await this.plugin.saveSettings();
+                    }),
+                );
+        }
+    }
+
+    private setFileTypeEnabled(extensions: string[], enabled: boolean): void {
+        const disabled = new Set(this.plugin.settings.disabledExtensions);
+        for (const ext of extensions) {
+            if (enabled) {
+                disabled.delete(ext);
+            } else {
+                disabled.add(ext);
+            }
+        }
+        this.plugin.settings.disabledExtensions = [...disabled];
     }
 }
