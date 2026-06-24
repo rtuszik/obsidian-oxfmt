@@ -1,0 +1,37 @@
+name: CI
+
+on:
+    push:
+        branches: ['**']
+    pull_request:
+        branches: ['**']
+
+permissions:
+    contents: read
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+              with:
+                  persist-credentials: false
+
+            - name: Install tools (aube, oxlint, oxfmt)
+              uses: jdx/mise-action@c37c93293d6b742fc901e1406b8f764f6fb19dac # v2
+
+            - name: Install dependencies
+              run: aube ci
+
+            - name: Build
+              run: aube run build
+
+            - name: Test
+              run: aube run test
+
+            - name: Lint
+              run: oxlint
+
+            - name: Check formatting
+              run: oxfmt --check

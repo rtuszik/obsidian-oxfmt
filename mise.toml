@@ -1,0 +1,7 @@
+[tools]
+aube = "latest"
+hk = "latest"
+opengrep = "latest"
+oxfmt = "latest"
+oxlint = "latest"
+zizmor = "latest"

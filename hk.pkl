@@ -1,0 +1,34 @@
+amends "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.48.0/hk@1.48.0#/Builtins.pkl"
+
+// Fast steps that run on every commit.
+local linters = new Mapping<String, Step> {
+    ["oxlint"] = Builtins.ox_lint
+    ["oxfmt"] = Builtins.oxfmt
+}
+
+// opengrep (SAST) pulls rule packs from the registry, so it is kept out of the
+// pre-commit path and only runs in `hk check` / CI to keep commits fast.
+local opengrep: Step = new Step {
+    glob = "*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"
+    check = "opengrep scan --error --config p/typescript --config p/security-audit ."
+}
+
+hooks {
+    ["pre-commit"] {
+        fix = true
+        stash = "git"
+        steps = linters
+    }
+    ["fix"] {
+        fix = true
+        steps = linters
+    }
+    ["check"] {
+        steps {
+            ["oxlint"] = Builtins.ox_lint
+            ["oxfmt"] = Builtins.oxfmt
+            ["opengrep"] = opengrep
+        }
+    }
+}
