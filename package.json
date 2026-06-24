@@ -1,6 +1,6 @@
 {
     "name": "obsidian-oxfmt",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "description": "Format notes and code in your Obsidian vault with oxfmt on save.",
     "keywords": [
         "formatter",

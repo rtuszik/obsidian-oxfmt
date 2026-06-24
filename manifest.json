@@ -1,7 +1,7 @@
 {
     "id": "obsidian-oxfmt",
     "name": "oxfmt",
-    "version": "1.0.0",
+    "version": "0.1.0",
     "minAppVersion": "1.0.0",
     "description": "Format notes and code in your vault with the oxfmt formatter, on save or on demand.",
     "author": "rtuszik",
