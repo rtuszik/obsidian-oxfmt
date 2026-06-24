@@ -1,7 +1,7 @@
 # obsidian-oxfmt
 
 obsidian-oxfmt is an Obsidian plugin that formats files in a vault with the
-oxfmt formatter, on save or on demand.
+oxfmt formatter (https://oxc.rs), on save or on demand.
 
 The plugin formats the active file by piping its contents through the oxfmt
 command-line program and writing the result back into the editor. Because it
@@ -78,6 +78,13 @@ Settings are available under Settings, oxfmt.
 The supported file types are those the bundled oxfmt accepts on standard input:
 Markdown, JavaScript, TypeScript, JSON, YAML, CSS, SCSS, LESS, HTML, GraphQL,
 TOML, Vue, and Svelte.
+
+## Disclaimer
+
+obsidian-oxfmt is an independent project. It is not affiliated with, endorsed
+by, or sponsored by the oxc project or the authors of oxfmt. It invokes the
+separately distributed oxfmt program, which is the work of its own authors
+(https://oxc.rs).
 
 ## License
 
