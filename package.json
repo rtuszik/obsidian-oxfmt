@@ -22,10 +22,10 @@
         "security": "opengrep scan --error --config p/typescript --config p/security-audit ."
     },
     "devDependencies": {
-        "@types/node": "^22.15.17",
+        "@types/node": "22.20.2",
         "esbuild": "0.25.5",
         "obsidian": "latest",
-        "typescript": "^5.8.3"
+        "typescript": "5.9.3"
     },
     "aube": {
         "allowBuilds": {
